@@ -56,6 +56,7 @@ const asset = {
     datasets: '',
     tags: '',
     secretsCollection: '',
+    resultProperties: '',
     startDate: '',
     projectId: '',
     teamspaceId: '',
@@ -202,6 +203,13 @@ const asset = {
         return this.secretsCollection;
     },
 
+    set setResultProperties(resultProperties) {
+        this.resultProperties = resultProperties;
+    },
+    get getResultProperties() {
+        return this.resultProperties;
+    },
+
     set setStartDate(startDate) {
         this.startDate = startDate;
     },
@@ -242,6 +250,8 @@ const main = async () => {
         asset.setTags = tags;
 		const secretsCollection = core.getInput('secretsCollection', { required: false });
         asset.setSecretsCollection = secretsCollection;
+		const resultProperties = core.getInput('resultProperties', { required: false });
+        asset.setResultProperties = resultProperties;
 
         await serverSSLCheck(serverStore);
 
@@ -666,6 +676,28 @@ async function startJobExecution(serverStore, asset) {
     if (asset.getSecretsCollection) {
         await getSecretCollectionId(serverStore, asset);
         AssetParameters["secretsCollection"] = secretsCollectionId;
+    }
+
+    if (asset.getResultProperties) {
+        var resPropObject = {};
+        var resPropsArray = asset.getResultProperties.split(';');
+        for (var i = 0; i < resPropsArray.length; i++) {
+            var resProp = resPropsArray[i];
+            if (!resProp) {
+                continue;
+            }
+            var keyValue = resProp.split('=', 2);
+            var key = keyValue[0] ? keyValue[0].trim() : '';
+            var value = keyValue.length > 1 ? keyValue[1].trim() : undefined;
+            if (key && value !== undefined && value !== '') {
+                resPropObject["result.property." + key] = value;
+            }
+        }
+        if (Object.keys(resPropObject).length > 0) {
+            var advancedObject = {};
+            advancedObject["configuration"] = resPropObject;
+            AssetParameters["advancedSettings"] = advancedObject;
+        }
     }
 
     await accessTokenGen(serverStore);
