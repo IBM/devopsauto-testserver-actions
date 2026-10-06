@@ -37,6 +37,9 @@ inputs:
   variables:
     description: 'Optional. Variables corresponding to the test. You must enter the variables in the format: name_of_the_variable=value_of_the_variable'
     required: false   
+  resultProperties:
+    description: 'Optional. Extra properties to store with the result, for example prop1=value1;prop2=value2'
+    required: false       
 runs:
   using: 'node16'
   main: 'dist/index.js' 
